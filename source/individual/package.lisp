@@ -4,15 +4,15 @@
 (defpackage #:gene-mangler.individual
   (:use #:cl #:gene-mangler.aux-package)
   (:export
-   #:individual
-   #:individual-p
-   #:fitness
    #:content
+   #:crossover
+   #:crossover*
+   #:fitness
+   #:fitness*
+   #:individual
+   #:individual-content
    #:individual-fitness
    #:individual-has-fitness-p
-
-   #:crossover
+   #:individual-p
    #:mutate
-   #:fitness*
-   #:crossover*
    #:mutate*))
