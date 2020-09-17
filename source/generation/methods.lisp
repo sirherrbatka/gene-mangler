@@ -42,10 +42,8 @@
       (for j from 0 below i)
       (for b = (aref population j))
       (for offsprings = (individual:crossover mixer a b))
-      (iterate
-        (for (values offspring more) = (cl-ds:consume-front offsprings))
-        (while more)
-        (vector-push-extend offspring result)))
+      (map nil (rcurry #'vector-push-extend result)
+           offsprings))
     (finally (return result))))
 
 
