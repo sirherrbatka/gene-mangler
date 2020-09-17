@@ -1,0 +1,17 @@
+(cl:in-package #:gene-mangler.process)
+
+
+(defgeneric cycle! (process))
+(defgeneric run! (process))
+(defgeneric maximum-generation (process))
+(defgeneric generation (process))
+(defgeneric finished-p (process)
+  (:method-combination or))
+(defgeneric (setf generation) (new-value process))
+(defgeneric population-interface (process))
+(defgeneric population (process))
+(defgeneric (setf population) (new-value process))
+(defgeneric mutator (process))
+(defgeneric mixer (process))
+(defgeneric fitness-calculator (process))
+(defgeneric criteria (process))
