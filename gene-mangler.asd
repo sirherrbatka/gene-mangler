@@ -19,7 +19,8 @@
                              (:file "types")
                              (:file "utils")
                              (:file "functions")
-                             (:file "methods")))
+                             (:file "methods")
+                             (:file "documentation")))
                (:module "generation"
                 :components ((:file "package")
                              (:file "generics")
