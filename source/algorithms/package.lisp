@@ -10,5 +10,6 @@
   (:export
    #:fundamental-selection-criteria
    #:fundamental-mixer
+   #:fundamental-fitness-calculator
    #:fundamental-mutator
    #:mutation-rate))

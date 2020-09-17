@@ -14,4 +14,5 @@
                    :reader generation:mutation-rate)))
 
 
-
+(defclass fundamental-fitness-calculator ()
+  ())
