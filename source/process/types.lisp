@@ -16,4 +16,6 @@
     :accessor generation)
    (%maximum-generation
     :initarg :maximum-generation
-    :reader maximum-generation)))
+    :reader maximum-generation))
+  (:default-initargs
+   :generation 0))

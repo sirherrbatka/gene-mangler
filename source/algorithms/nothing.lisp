@@ -1,4 +1,4 @@
-(cl:in-package #:gene-mangler.algorithm)
+(cl:in-package #:gene-mangler.algorithms)
 
 
 (defmethod gene-mangler.individual:mutate* ((mutator (eql nil))

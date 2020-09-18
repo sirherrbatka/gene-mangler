@@ -27,6 +27,8 @@
    #:graph-mutator
    #:invalid-origin
    #:lense
+   #:index
+   #:set-indexes-for-nodes
    #:look
    #:make-edge
    #:no-edge-error

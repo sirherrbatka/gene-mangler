@@ -23,7 +23,8 @@
     (with result = (make-array selected-count
                                :adjustable t
                                :fill-pointer selected-count))
-    (for i from 0 below selected-count)
+    (for i from 0 below (min (length population)
+                             selected-count))
     (for random = (random largest-value))
     (for k = (cl-ds.utils:lower-bound values random #'<))
     (setf (aref result i) (aref population k))

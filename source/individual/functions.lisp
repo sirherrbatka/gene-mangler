@@ -13,10 +13,12 @@
 
 
 (defun crossover (cross individual-a individual-b)
-  (~> (crossover* cross
-                  (content individual-a)
-                  (content individual-b))
-      (make-individual :content)))
+  (map 'vector
+       (lambda (x)
+         (make-individual :content x))
+       (crossover* cross
+                   (content individual-a)
+                   (content individual-b))))
 
 
 (defun mutate (mutator individual)

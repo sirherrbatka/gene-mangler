@@ -33,6 +33,7 @@
                       fitness-calculator
                       (population-interface population-interface)
                       population)
+  (declare (optimize (debug 3)))
   (iterate
     (with result = (vect))
     (with length = (length population))

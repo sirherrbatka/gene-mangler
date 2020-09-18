@@ -12,9 +12,9 @@
    #:maximum-generation
    #:generation
    #:population
+   #:process
    #:population-interface
-   #:mutator
-   #:mixer
+   #:conductor
    #:finished-p
    #:fitness-calculator
    #:criteria))

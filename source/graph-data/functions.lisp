@@ -55,8 +55,10 @@
           (with nodes = (vect))
           (with edges = (vect))
           (for (edge destination) in trace)
+          (assert (not (find destination nodes)))
           (vector-push-extend destination nodes)
           (unless (null edge)
+            (assert (not (find edge edges)))
             (vector-push-extend edge edges))
           (finally
            (return-from outer

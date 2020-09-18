@@ -53,3 +53,10 @@
                              (setf (edges node)
                                    (map 'vector #'second edges))))))
      (make 'graph :nodes (set-indexes-for-nodes (vector ,@(map 'list #'first nodes))))))
+
+
+(defun remove-obsolete-broken-edges (broken-edges nodes)
+  (remove-if-not (lambda (edge)
+                   (or (find (first-node edge) nodes)
+                       (find (second-node edge) nodes)))
+                 broken-edges))

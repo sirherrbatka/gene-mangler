@@ -4,7 +4,8 @@
 (defmethod run! ((process process))
   (iterate
     (until (finished-p process))
-    (cycle! process)))
+    (cycle! process)
+    (finally (return (population process)))))
 
 
 (defmethod finished-p or ((process process))

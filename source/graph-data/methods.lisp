@@ -12,6 +12,7 @@
 
 
 (defmethod clone ((graph graph-fragment))
+  (declare (optimize (debug 3)))
   (bind (((:values clone mapping) (call-next-method))
          (nodes (nodes clone))
          (broken-edges (~> graph broken-edges copy-array)))
@@ -25,10 +26,13 @@
         (for (values lense more) = (cl-ds:consume-front range))
         (while more)
         (for object = (look lense))
-        (setf (look lense) (ensure (gethash object mapping)
-                             (clone object))))
+        (for already-cloned = (gethash object mapping))
+        (setf (look lense) already-cloned))
+      (assert (not (original-edge clone)))
+      (assert (or (first-node clone) (second-node clone)))
       (finally (return (values (make 'graph-fragment
                                      :nodes nodes
+                                     :source-graph (source-graph graph)
                                      :broken-edges broken-edges)
                                mapping))))))
 
@@ -46,7 +50,8 @@
           (or (~> broken-edge first-node
                   (find nodes :test 'eq))
               (~> broken-edge second-node
-                  (find nodes :test 'eq))))
+                  (find nodes :test 'eq))
+              (assert nil)))
          ((:flet merge-edges (a-edge b-edge))
           (bind ((a-edge-node (find-node a-edge a-nodes))
                  (b-edge-node (find-node b-edge b-nodes))
@@ -65,9 +70,8 @@
          (~> a-broken-edges copy-array shuffle)
          (~> b-broken-edges copy-array shuffle))
     (make 'graph
-          :nodes (~> a-broken-edges first-elt
-                     first-node reachable-nodes
-                     set-indexes-for-nodes))))
+          :nodes (~> a-fragment-clone nodes first-elt
+                     reachable-nodes set-indexes-for-nodes))))
 
 
 (defmethod cl-ds.utils:cloning-information append ((node node))
@@ -126,7 +130,9 @@
           (when new
             (push clone stack))))
         (values (make 'graph
-                      :nodes (map 'vector #'ensure-clone nodes))
+                      :nodes (map 'vector
+                                  (rcurry #'gethash clone-mapping)
+                                  nodes))
                 clone-mapping)))
 
 
@@ -183,12 +189,13 @@
                                   a-graph b-graph)
   (let ((a-cutset (cutset mixer a-graph))
         (b-cutset (cutset mixer b-graph)))
-    (cl-ds.alg:multiplex
-     a-cutset
-     :function (lambda (a-fragment)
-                 (cl-ds.alg:on-each b-cutset
-                                    (curry #'combine-fragments
-                                           mixer a-fragment))))))
+    (~> (cl-ds.alg:multiplex
+         a-cutset
+         :function (lambda (a-fragment)
+                     (cl-ds.alg:on-each b-cutset
+                                        (curry #'combine-fragments
+                                               mixer a-fragment))))
+        cl-ds.alg:to-vector)))
 
 
 (defmethod cut ((mixer graph-cutset-mixer) graph)
@@ -208,16 +215,63 @@
     (finally
      (let ((first-nodes (reachable-nodes first-node))
            (second-nodes (reachable-nodes second-node)))
+       (assert (= (+ (length first-nodes)
+                     (length second-nodes))
+                  (length (nodes graph))))
+       (iterate
+         (for first in-vector first-nodes)
+         (assert (not (find first second-nodes))))
        (set-indexes-for-nodes first-nodes)
        (set-indexes-for-nodes second-nodes)
-       (vector-push-extend (make 'graph-fragment
-                                 :broken-edges broken-edges
-                                 :source-graph graph
-                                 :nodes first-nodes)
-                           result)
-       (vector-push-extend (make 'graph-fragment
-                                 :broken-edges broken-edges
-                                 :source-graph graph
-                                 :nodes second-nodes)
-                           result)
+       (vector-push-extend
+        (make
+         'graph-fragment
+         :broken-edges (remove-obsolete-broken-edges broken-edges
+                                                     first-nodes)
+         :source-graph graph
+         :nodes first-nodes)
+        result)
+       (vector-push-extend
+        (make
+         'graph-fragment
+         :broken-edges (remove-obsolete-broken-edges broken-edges
+                                                     second-nodes)
+         :source-graph graph
+         :nodes second-nodes)
+        result)
        (return result)))))
+
+
+(defmethod initialize-instance :after ((object path)
+                                       &rest initargs)
+  (declare (ignore initargs))
+  (let ((nodes (nodes object))
+        (edges (edges object)))
+    (iterate
+      (for node in-vector nodes)
+      (for edge in-vector edges)
+      (assert (or (eq (first-node edge) node)
+                  (eq (second-node edge) node))))))
+
+
+(defmethod initialize-instance :after ((object edge) &rest initargs)
+  (declare (ignore initargs))
+  (assert (not (eq (first-node object)
+                   (second-node object)))))
+
+
+(defmethod initialize-instance :after ((object graph) &rest initargs)
+  (declare (ignore initargs))
+  (iterate
+    (for node in-vector (nodes object))
+    (assert node)))
+
+
+(defmethod initialize-instance :after ((object graph-fragment)
+                                       &rest initargs)
+  (declare (ignore initargs))
+  (iterate
+    (with nodes = (nodes object))
+    (for broken-edge in-vector (broken-edges object))
+    (assert (or (find (first-node broken-edge) nodes)
+                (find (second-node broken-edge) nodes)))))
