@@ -9,4 +9,4 @@
 (defmethod gene-mangler.generation:mutate ((mutator (eql nil))
                                            population-interface
                                            population)
-  population)
+  #())

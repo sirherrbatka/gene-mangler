@@ -4,7 +4,7 @@
 (defmethod run! ((process process))
   (iterate
     (until (finished-p process))
-    (cycle process)))
+    (cycle! process)))
 
 
 (defmethod finished-p or ((process process))
@@ -13,29 +13,10 @@
 
 
 (defmethod cycle! ((process process))
-  (let* ((population (population process))
-         (mutator (mutator process))
-         (fitness-calculator (fitness-calculator process))
-         (selection-criteria (criteria process))
-         (population-interface (population-interface process))
-         (mixer (mixer process))
-         (offsprings (generation:crossover mixer
-                                           fitness-calculator
-                                           population-interface
-                                           population))
-         (mutants (generation:mutate mutator
-                                     population-interface
-                                     offsprings))
-         (combined-population (generation:build-population
-                               population-interface
-                               (cl-ds.alg:multiplex
-                                (list population
-                                      offsprings
-                                      mutants))))
-        (new-population
-          (generation:select selection-criteria
-            fitness-calculator
-            population-interface
-            combined-population)))
-    (setf (population process) new-population)
-    process))
+  (let ((new-generation (generation:new-generation
+                         (conductor process)
+                         (population-interface process)
+                         (population process))))
+    (setf (population process) new-generation)
+    (incf (generation process)))
+  process)

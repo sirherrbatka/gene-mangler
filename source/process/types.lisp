@@ -2,18 +2,12 @@
 
 
 (defclass process ()
-  ((%mixer
-    :initarg :mixer
-    :reader mixer)
-   (%mutator
-    :initarg :mutator
-    :reader mutator)
-   (%fitness-calculator
-    :initarg :fitness-calculator
-    :reader fitness-calculator)
-   (%criteria
-    :initarg :criteria
-    :reader criteria)
+  ((%conductor
+    :initarg :conductor
+    :accessor conductor)
+   (%population-interface
+    :initarg :population-interface
+    :accessor population-interface)
    (%population
     :initarg :population
     :accessor population)

@@ -10,3 +10,14 @@
               :reader parallel)
    (%hash-function :initarg :hash-function
                    :reader hash-function)))
+
+
+(defclass fundamental-conductor ()
+  ((%mutator :initarg :mutator
+             :reader mutator)
+   (%mixer :initarg :mixer
+           :reader mixer)
+   (%fitness-calculator :initarg :fitness-calculator
+                        :reader fitness-calculator)
+   (%selection-criteria :initarg :selection-criteria
+                        :reader selection-criteria)))

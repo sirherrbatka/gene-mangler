@@ -4,6 +4,9 @@
 (defgeneric crossover (mixer fitness-calculator
                        population-interface population))
 (defgeneric mutate (mutator population-interface population))
+(defgeneric new-generation (conductor
+                            population-interface
+                            population))
 (defgeneric ensure-fitness (fitness-calculator
                             population-interface
                             population))
@@ -13,3 +16,7 @@
 (defgeneric mutation-rate (mutator))
 (defgeneric test (population-interface))
 (defgeneric hash-function (population-interface))
+(defgeneric mutator (conductor))
+(defgeneric mixer (conductor))
+(defgeneric selection-criteria (conductor))
+(defgeneric fitness-calculator (conductor))

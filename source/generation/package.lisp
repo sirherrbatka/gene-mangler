@@ -6,13 +6,19 @@
   (:local-nicknames
    (#:individual #:gene-mangler.individual))
   (:export
-   #:population-interface
-   #:distinct
-   #:crossover
-   #:mutate
    #:build-population
+   #:crossover
+   #:distinct
    #:ensure-fitness
-   #:select
+   #:fundamental-conductor
+   #:hash-function
+   #:mutate
    #:mutation-rate
-   #:test
-   #:hash-function))
+   #:new-generation
+   #:population-interface
+   #:mutator
+   #:mixer
+   #:select
+   #:selection-criteria
+   #:fitness-calculator
+   #:test))
