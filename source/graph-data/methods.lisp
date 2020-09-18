@@ -56,6 +56,11 @@
                        (push-into-vector-copy new-edge))))
             (setf (edges a-edge-node) (with-new-edge a-edge-node)
                   (edges b-edge-node) (with-new-edge b-edge-node)))))
+    ;; this is not exactly correct,
+    ;; it simply discards all of the extra broken edges
+    ;; The source algorithm is more sophisticated as it does that
+    ;; it randomizes that behaviour
+    ;; TODO implement the complete algorithm
     (map nil #'merge-edges
          (~> a-broken-edges copy-array shuffle)
          (~> b-broken-edges copy-array shuffle))

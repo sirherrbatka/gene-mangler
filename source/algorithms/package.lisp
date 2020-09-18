@@ -12,4 +12,6 @@
    #:fundamental-mixer
    #:fundamental-fitness-calculator
    #:fundamental-mutator
+   #:concatinating-conductor
+   #:roulette-selection
    #:mutation-rate))
