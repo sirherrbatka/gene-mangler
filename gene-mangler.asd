@@ -42,6 +42,7 @@
                              (:file "fundamentals")
                              (:file "nothing")
                              (:file "roulette")
+                             (:file "conductors")
                              (:file "documentation")))
                (:module "graph-data"
                 :components ((:file "package")
