@@ -21,6 +21,8 @@
    #:edges
    #:first-node
    #:follow-edge
+   #:connect-nodes
+   #:nodes-connectable-p
    #:graph
    #:graph-cutset-mixer
    #:graph-fragment

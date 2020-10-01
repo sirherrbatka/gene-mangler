@@ -3,6 +3,8 @@
 
 (defgeneric cut (mixer graph))
 (defgeneric number-of-cuts (mixer))
+(defgeneric connect-nodes (mixer a-node b-node))
+(defgeneric nodes-connectable-p (mixer a-node b-node))
 (defgeneric combine-fragments (mixer a-fragment b-fragment))
 (defgeneric nodes (graph))
 (defgeneric edges (object))

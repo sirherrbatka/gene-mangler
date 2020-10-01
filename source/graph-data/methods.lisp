@@ -37,6 +37,23 @@
                                mapping))))))
 
 
+(defmethod connect-nodes ((mixer graph-cutset-mixer)
+                                 a-node
+                                 b-node)
+  (bind ((new-edge (make-edge mixer a-node b-node))
+         ((:flet with-new-edge (node))
+          (~>> node edges
+               (push-into-vector-copy new-edge))))
+    (setf (edges a-node) (with-new-edge a-node)
+          (edges b-node) (with-new-edge b-node))))
+
+
+(defmethod nodes-connectable-p ((mixer graph-cutset-mixer)
+                                a-node
+                                b-node)
+  t)
+
+
 (defmethod combine-fragments ((mixer graph-cutset-mixer)
                               a-fragment
                               b-fragment)
@@ -53,22 +70,35 @@
                   (find nodes :test 'eq))
               (assert nil)))
          ((:flet merge-edges (a-edge b-edge))
-          (bind ((a-edge-node (find-node a-edge a-nodes))
-                 (b-edge-node (find-node b-edge b-nodes))
-                 (new-edge (make-edge mixer a-edge-node b-edge-node))
-                 ((:flet with-new-edge (node))
-                  (~>> node edges
-                       (push-into-vector-copy new-edge))))
-            (setf (edges a-edge-node) (with-new-edge a-edge-node)
-                  (edges b-edge-node) (with-new-edge b-edge-node)))))
+          (connect-nodes mixer
+                         (find-node a-edge a-nodes)
+                         (find-node b-edge b-nodes)))
+         (a-random-broken-edges (~> a-broken-edges copy-array shuffle))
+         (b-random-broken-edges (~> b-broken-edges copy-array shuffle))
+         ((:values shorter.nodes longer.nodes)
+          (extrema `((,a-random-broken-edges . ,a-nodes)
+                     (,b-random-broken-edges . ,b-nodes))
+                   #'< :key (compose #'length #'car)))
+         ((shorter . shorter-nodes) shorter.nodes)
+         ((longer . longer-nodes) longer.nodes))
     ;; this is not exactly correct,
     ;; it simply discards all of the extra broken edges
     ;; The source algorithm is more sophisticated as it does that
     ;; it randomizes that behaviour
     ;; TODO implement the complete algorithm
-    (map nil #'merge-edges
-         (~> a-broken-edges copy-array shuffle)
-         (~> b-broken-edges copy-array shuffle))
+    (map nil #'merge-edges a-random-broken-edges b-random-broken-edges)
+    (iterate
+      (for i from (length shorter) below (length longer))
+      (for broken-edge = (aref longer i))
+      (for longer-node = (find-node broken-edge longer-nodes))
+      (iterate
+        (for discarded-p = (random 3))
+        (until (zerop discarded-p))
+        (for random = (~> shorter length random))
+        (for shorter-node = (aref shorter-nodes random))
+        (when (nodes-connectable-p mixer shorter-node longer-node)
+          (connect-nodes mixer shorter-node longer-node)
+          (leave))))
     (make 'graph
           :nodes (~> a-fragment-clone nodes first-elt
                      reachable-nodes set-indexes-for-nodes))))
