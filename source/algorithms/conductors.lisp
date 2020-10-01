@@ -30,4 +30,4 @@
              fitness-calculator
              population-interface
              combined-population)))
-    new-population))
+    (shuffle new-population)))
