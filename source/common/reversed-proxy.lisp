@@ -70,7 +70,9 @@
            (collect `(defmethod ,with-proxy-name
                          ,(generic-lambda-list list)
                        ,(if setfp
-                            `(setf (,with-proxy-name ,@next ,@(rest function-arguments))
+                            `(setf (,(second with-proxy-name)
+                                    ,@next
+                                    ,@(rest function-arguments))
                                    ,(first function-arguments))
                             `(,with-proxy-name
                               ,@next
