@@ -13,6 +13,9 @@
   :serial T
   :pathname "source"
   :components ((:file "aux-package")
+               (:module "common"
+                :components ((:file "package")
+                             (:file "reversed-proxy")))
                (:module "individual"
                 :components ((:file "package")
                              (:file "generics")
@@ -39,10 +42,10 @@
                              (:file "documentation")))
                (:module "algorithms"
                 :components ((:file "package")
-                             (:file "fundamentals")
                              (:file "nothing")
                              (:file "roulette")
                              (:file "conductors")
+                             (:file "directed")
                              (:file "documentation")))
                (:module "graph-data"
                 :components ((:file "package")

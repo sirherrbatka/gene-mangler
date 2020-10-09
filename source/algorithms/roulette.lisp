@@ -1,20 +1,23 @@
 (cl:in-package #:gene-mangler.algorithms)
 
 
-(defclass roulette-selection (fundamental-selection-criteria)
+(defclass roulette-selection (common:reversed-proxy)
   ((%selected-count :initarg :select-count
                     :reader selected-count)))
 
 
-(defmethod generation:select ((criteria roulette-selection)
-                              fitness-calculator
-                              population-interface
-                              population)
+(defmethod generation:select/proxy ((criteria roulette-selection)
+                                    selection
+                                    fitness-calculator
+                                    population-interface
+                                    population)
   (generation:ensure-fitness fitness-calculator
                              population-interface
                              population)
   (iterate
-    (with values = (~> population
+    (with population = (call-next-method))
+    (with values = (~> population-interface
+                       (generation:population-range population)
                        (cl-ds.alg:cumulative-accumulate
                         #'+ :key #'individual:individual-fitness)
                        cl-ds.alg:to-vector))
@@ -28,4 +31,6 @@
     (for random = (random largest-value))
     (for k = (cl-ds.utils:lower-bound values random #'<))
     (setf (aref result i) (aref population k))
-    (finally (return result))))
+    (finally (return
+               (generation:build-population population-interface
+                                            result)))))

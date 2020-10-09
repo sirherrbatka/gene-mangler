@@ -1,11 +1,11 @@
 (cl:in-package #:gene-mangler.graph-data)
 
 
-(defclass graph-mutator (algorithms:fundamental-mutator)
+(defclass graph-mutator (individual:fundamental-mutator)
   ())
 
 
-(defclass graph-cutset-mixer (algorithms:fundamental-mixer)
+(defclass graph-cutset-mixer (individual:fundamental-mixer)
   ((%number-of-cuts :initarg :number-of-cuts
                     :reader number-of-cuts))
   (:default-initargs :number-of-cuts 1))

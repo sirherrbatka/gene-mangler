@@ -1,7 +1,7 @@
 (cl:in-package #:gene-mangler.process)
 
 
-(defclass process ()
+(defclass process (common:proxy-enabled)
   ((%conductor
     :initarg :conductor
     :accessor conductor)

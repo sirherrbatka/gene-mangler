@@ -5,13 +5,13 @@
   (:use #:cl #:gene-mangler.aux-package)
   (:local-nicknames
    (#:individual #:gene-mangler.individual)
+   (#:common #:gene-mangler.common)
    (#:generation #:gene-mangler.generation)
    (#:process #:gene-mangler.process))
   (:export
-   #:fundamental-selection-criteria
-   #:fundamental-mixer
-   #:fundamental-fitness-calculator
-   #:fundamental-mutator
+   #:proxy
+   #:criteria
    #:concatinating-conductor
+   #:envelop
    #:roulette-selection
    #:mutation-rate))

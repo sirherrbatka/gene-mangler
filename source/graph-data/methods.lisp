@@ -12,7 +12,6 @@
 
 
 (defmethod clone ((graph graph-fragment))
-  (declare (optimize (debug 3)))
   (bind (((:values clone mapping) (call-next-method))
          (nodes (nodes clone))
          (broken-edges (~> graph broken-edges copy-array)))
@@ -38,8 +37,8 @@
 
 
 (defmethod connect-nodes ((mixer graph-cutset-mixer)
-                                 a-node
-                                 b-node)
+                          a-node
+                          b-node)
   (bind ((new-edge (make-edge mixer a-node b-node))
          ((:flet with-new-edge (node))
           (~>> node edges
@@ -86,7 +85,9 @@
     ;; The source algorithm is more sophisticated as it does that
     ;; it randomizes that behaviour
     ;; TODO implement the complete algorithm
-    (map nil #'merge-edges a-random-broken-edges b-random-broken-edges)
+    (map nil #'merge-edges
+         a-random-broken-edges
+         b-random-broken-edges)
     (iterate
       (for i from (length shorter) below (length longer))
       (for broken-edge = (aref longer i))
@@ -94,7 +95,7 @@
       (iterate
         (for discarded-p = (random 3))
         (until (zerop discarded-p))
-        (for random = (~> shorter length random))
+        (for random = (~> shorter-nodes length random))
         (for shorter-node = (aref shorter-nodes random))
         (when (nodes-connectable-p mixer shorter-node longer-node)
           (connect-nodes mixer shorter-node longer-node)
@@ -215,8 +216,9 @@
        (finally (return-from outer result))))))
 
 
-(defmethod individual:crossover* ((mixer graph-cutset-mixer)
-                                  a-graph b-graph)
+(defmethod individual:crossover*/proxy (mixer/proxy
+                                        (mixer graph-cutset-mixer)
+                                        a-graph b-graph)
   (let ((a-cutset (cutset mixer a-graph))
         (b-cutset (cutset mixer b-graph)))
     (~> (cl-ds.alg:multiplex

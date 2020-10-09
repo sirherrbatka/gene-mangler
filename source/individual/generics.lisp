@@ -1,6 +1,7 @@
 (cl:in-package #:gene-mangler.individual)
 
-
-(defgeneric crossover* (mixer individual-a individual-b))
-(defgeneric mutate* (mutator individual))
-(defgeneric fitness* (fitness-calculator individual))
+(common:defgeneric/proxy crossover* ((mixer)
+                                     individual-a
+                                     individual-b))
+(common:defgeneric/proxy mutate* ((mutator) individual))
+(common:defgeneric/proxy for-mutation-p ((mutator) individual))

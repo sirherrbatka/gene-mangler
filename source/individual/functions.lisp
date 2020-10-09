@@ -7,11 +7,6 @@
       individual))
 
 
-(defun fitness (fitness-calculator individual)
-  (ensure (individual-fitness individual)
-    (~>> individual content (fitness* fitness-calculator))))
-
-
 (defun crossover (cross individual-a individual-b)
   (map 'vector
        (lambda (x)

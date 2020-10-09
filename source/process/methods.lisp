@@ -3,14 +3,19 @@
 
 (defmethod run! ((process process))
   (iterate
-    (until (finished-p process))
+    (with population-interface = (population-interface process))
+    (for population = (population process))
+    (until (finished-p process population-interface population))
     (cycle! process)
     (finally (return (population process)))))
 
 
-(defmethod finished-p or ((process process))
-  (>= (generation process)
-      (maximum-generation process)))
+(defmethod finished-p/proxy (process/proxy
+                             population-interface/proxy
+                             (process process)
+                             population-interface
+                             population)
+  (>= (generation process) (maximum-generation process)))
 
 
 (defmethod cycle! ((process process))
@@ -18,6 +23,17 @@
                          (conductor process)
                          (population-interface process)
                          (population process))))
-    (setf (population process) new-generation)
+    (setf (population process) (update-population-after-cycle!
+                                process
+                                (population-interface process)
+                                new-generation))
     (incf (generation process)))
   process)
+
+
+(defmethod update-population-after-cycle!/proxy (process/proxy
+                                                 population-interface/proxy
+                                                 (process process)
+                                                 population-interface
+                                                 population)
+  population)
