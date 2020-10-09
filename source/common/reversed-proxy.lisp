@@ -70,13 +70,11 @@
            (collect `(defmethod ,with-proxy-name
                          ,(generic-lambda-list list)
                        ,(if setfp
-                            `(call-next-method
-                              ,(first function-arguments)
+                            `(setf (,with-proxy-name ,@next ,@(rest function-arguments))
+                                   ,(first function-arguments))
+                            `(,with-proxy-name
                               ,@next
-                              ,@(rest function-arguments))
-                            `(call-next-method
-                             ,@next
-                             ,@function-arguments)))))
+                              ,@function-arguments)))))
        (defun ,name (,@function-arguments)
          (funcall #',with-proxy-name
                   ,@(iterate
