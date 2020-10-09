@@ -15,7 +15,7 @@
   :components ((:file "aux-package")
                (:module "common"
                 :components ((:file "package")
-                             (:file "reversed-proxy")))
+                             (:file "reverse-proxy")))
                (:module "individual"
                 :components ((:file "package")
                              (:file "generics")

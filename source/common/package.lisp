@@ -4,7 +4,7 @@
 (defpackage #:gene-mangler.common
   (:use #:cl #:gene-mangler.aux-package)
   (:export
-   #:reversed-proxy
+   #:reverse-proxy
    #:proxy-enabled
    #:envelop
    #:proxy

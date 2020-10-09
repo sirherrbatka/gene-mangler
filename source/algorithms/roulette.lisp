@@ -1,7 +1,7 @@
 (cl:in-package #:gene-mangler.algorithms)
 
 
-(defclass roulette-selection (common:reversed-proxy)
+(defclass roulette-selection (common:reverse-proxy)
   ((%selected-count :initarg :select-count
                     :reader selected-count)))
 

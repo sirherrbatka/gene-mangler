@@ -13,10 +13,9 @@
 (defgeneric mixer (process))
 (defgeneric fitness-calculator (process))
 (defgeneric criteria (process))
-(common:defgeneric/proxy update-population-after-cycle!
-    ((process)
-     (population-interface)
-     population))
+(common:defgeneric/proxy update-population-after-cycle! ((process)
+                                                         (population-interface)
+                                                         population))
 (common:defgeneric/proxy finished-p ((process)
                                      (population-interface)
                                      population))

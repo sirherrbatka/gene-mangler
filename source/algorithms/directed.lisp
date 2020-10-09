@@ -1,7 +1,7 @@
 (cl:in-package #:gene-mangler.algorithms)
 
 
-(defclass directed (common:reversed-proxy)
+(defclass directed (common:reverse-proxy)
   ((%directions :initarg :directions
                 :reader directions)))
 
@@ -16,17 +16,19 @@
 (defmethod generation:population-range/proxy ((population-interface/proxy directed)
                                               population-interface
                                               population)
-  (call-next-method (common:next-proxy population-interface/proxy)
-                    population-interface
-                    (population population)))
+  (~> population-interface/proxy
+      common:next-proxy
+      (call-next-method population-interface
+                        (population population))))
 
 
 (defmethod generation:build-population/proxy ((population-interface/proxy directed)
                                               population-interface
                                               individuals)
-  (let ((population (call-next-method (common:next-proxy population-interface/proxy)
-                                      population-interface
-                                      individuals)))
+  (let ((population (~> population-interface/proxy
+                        common:next-proxy
+                        (call-next-method population-interface
+                                          individuals))))
     (make 'directed-population
           :directions (directions population-interface)
           :population population)))
