@@ -1,12 +1,12 @@
 (cl:in-package #:gene-mangler.algorithms)
 
 
-(defclass roulette-selection (common:reverse-proxy)
+(defclass roulette (common:lifting-proxy)
   ((%selected-count :initarg :select-count
                     :reader selected-count)))
 
 
-(defmethod generation:select/proxy ((criteria roulette-selection)
+(defmethod generation:select/proxy ((criteria roulette)
                                     selection
                                     fitness-calculator
                                     population-interface

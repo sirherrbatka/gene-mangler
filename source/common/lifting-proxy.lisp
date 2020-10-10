@@ -15,7 +15,7 @@
   nil)
 
 
-(defclass reverse-proxy ()
+(defclass lifting-proxy ()
   ((%next-proxy :initarg :next-proxy
                 :reader next-proxy))
   (:default-initargs :next-proxy nil))
@@ -61,7 +61,7 @@
        (defgeneric ,with-proxy-name ,(generic-lambda-list))
        ,@(iterate
            (for arg in proxy-arguments)
-           (for list = (substitute (list arg 'reverse-proxy)
+           (for list = (substitute (list arg 'lifting-proxy)
                                    arg
                                    proxy-arguments))
            (for next = (substitute `(next-proxy ,arg)

@@ -15,7 +15,7 @@
   :components ((:file "aux-package")
                (:module "common"
                 :components ((:file "package")
-                             (:file "reverse-proxy")))
+                             (:file "lifting-proxy")))
                (:module "individual"
                 :components ((:file "package")
                              (:file "generics")
@@ -46,6 +46,7 @@
                              (:file "roulette")
                              (:file "conductors")
                              (:file "directed")
+                             (:file "elite")
                              (:file "documentation")))
                (:module "graph-data"
                 :components ((:file "package")

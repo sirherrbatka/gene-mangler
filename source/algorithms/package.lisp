@@ -12,6 +12,6 @@
    #:proxy
    #:criteria
    #:concatinating-conductor
-   #:envelop
-   #:roulette-selection
+   #:elite
+   #:roulette
    #:mutation-rate))
