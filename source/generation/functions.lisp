@@ -13,6 +13,7 @@
 
 
 (defun crossover (mixer
+                  fitness-calculator
                   population-interface
                   population)
   (~> (crossover-pairs population-interface
@@ -22,6 +23,7 @@
                    (bind (((a . b) a.b))
                      (individual:crossover
                       mixer
+                      fitness-calculator
                       a b))))
       cl-ds.alg:to-vector))
 

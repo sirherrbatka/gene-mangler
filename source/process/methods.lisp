@@ -23,11 +23,11 @@
                          (conductor process)
                          (population-interface process)
                          (population process))))
+    (incf (generation process))
     (setf (population process) (update-population-after-cycle!
                                 process
                                 (population-interface process)
-                                new-generation))
-    (incf (generation process)))
+                                new-generation)))
   process)
 
 

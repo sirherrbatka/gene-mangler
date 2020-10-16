@@ -14,4 +14,6 @@
    #:concatinating-conductor
    #:elite
    #:roulette
+   #:repeats
+   #:replacing-conductor
    #:mutation-rate))

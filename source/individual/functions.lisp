@@ -7,11 +7,18 @@
       individual))
 
 
-(defun crossover (cross individual-a individual-b)
+(defun individual (content &optional fitness)
+  (if (individual-p content)
+      content
+      (make-individual :content content :fitness fitness)))
+
+
+(defun crossover (mixer fitness-calculator
+                  individual-a individual-b)
   (map 'vector
-       (lambda (x)
-         (make-individual :content x))
-       (crossover* cross
+       (lambda (x) (individual x))
+       (crossover* mixer
+                   fitness-calculator
                    (content individual-a)
                    (content individual-b))))
 
@@ -20,13 +27,7 @@
   (~>> individual
        content
        (mutate* mutator)
-       (make-individual :content)))
-
-
-(defun individual (content &optional fitness)
-  (if (individual-p content)
-      content
-      (make-individual :content content :fitness fitness)))
+       individual))
 
 
 (defun individual-has-fitness-p (individual)

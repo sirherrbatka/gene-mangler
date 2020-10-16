@@ -15,6 +15,8 @@
 (common:defgeneric/proxy ensure-fitness ((fitness-calculator)
                                          population-interface
                                          population))
+(common:defgeneric/proxy ensure-fitness/vector ((fitness-calculator)
+                                                vector))
 (common:defgeneric/proxy select ((criteria)
                                  fitness-calculator
                                  population-interface

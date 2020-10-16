@@ -85,21 +85,31 @@
     ;; The source algorithm is more sophisticated as it does that
     ;; it randomizes that behaviour
     ;; TODO implement the complete algorithm
-    (map nil #'merge-edges
-         a-random-broken-edges
-         b-random-broken-edges)
-    (iterate
-      (for i from (length shorter) below (length longer))
-      (for broken-edge = (aref longer i))
-      (for longer-node = (find-node broken-edge longer-nodes))
-      (iterate
-        (for discarded-p = (random 3))
-        (until (zerop discarded-p))
-        (for random = (~> shorter-nodes length random))
-        (for shorter-node = (aref shorter-nodes random))
-        (when (nodes-connectable-p mixer shorter-node longer-node)
-          (connect-nodes mixer shorter-node longer-node)
-          (leave))))
+    (map nil #'merge-edges a-random-broken-edges b-random-broken-edges)
+    (if (and (emptyp a-random-broken-edges)
+             (emptyp a-random-broken-edges))
+        (iterate outer
+          (with nodes-2 = (shuffle b-nodes))
+          (with nodes-1 = (shuffle a-nodes))
+          (for first-node in-vector nodes-1)
+          (iterate
+            (for second-node in-vector nodes-2)
+            (when (nodes-connectable-p mixer first-node second-node)
+              (connect-nodes mixer first-node second-node)
+              (in outer (leave))))
+          (finally (error "Can't connect graphs.")))
+        (iterate
+          (for i from (length shorter) below (length longer))
+          (for broken-edge = (aref longer i))
+          (for longer-node = (find-node broken-edge longer-nodes))
+          (iterate
+            (for discarded-p = (random 3))
+            (until (zerop discarded-p))
+            (for random = (~> shorter-nodes length random))
+            (for shorter-node = (aref shorter-nodes random))
+            (when (nodes-connectable-p mixer shorter-node longer-node)
+              (connect-nodes mixer shorter-node longer-node)
+              (leave)))))
     (make 'graph
           :nodes (~> a-fragment-clone nodes first-elt
                      reachable-nodes set-indexes-for-nodes))))
@@ -218,6 +228,7 @@
 
 (defmethod individual:crossover*/proxy (mixer/proxy
                                         (mixer graph-cutset-mixer)
+                                        fitness-calculator
                                         a-graph b-graph)
   (let ((a-cutset (cutset mixer a-graph))
         (b-cutset (cutset mixer b-graph)))
@@ -227,51 +238,61 @@
                      (cl-ds.alg:on-each b-cutset
                                         (curry #'combine-fragments
                                                mixer a-fragment))))
-        cl-ds.alg:to-vector)))
+        (cl-ds.alg:to-vector :key #'individual:individual))))
 
 
 (defmethod cut ((mixer graph-cutset-mixer) graph)
-  (iterate
-    (with result = (vect))
-    (with clone = (clone graph))
-    (with initial-edge = (~> clone edges pick-random))
-    (with first-node = (first-node initial-edge))
-    (with second-node = (second-node initial-edge))
-    (with edge = initial-edge)
-    (with broken-edges = (vect))
-    (for broken-edge = (break-edge! edge))
-    (vector-push-extend broken-edge broken-edges)
-    (for path = (shortest-path clone first-node second-node))
-    (until (null path))
-    (setf edge (~> path edges pick-random))
-    (finally
-     (let ((first-nodes (reachable-nodes first-node))
-           (second-nodes (reachable-nodes second-node)))
-       (assert (= (+ (length first-nodes)
-                     (length second-nodes))
-                  (length (nodes graph))))
-       (iterate
-         (for first in-vector first-nodes)
-         (assert (not (find first second-nodes))))
-       (set-indexes-for-nodes first-nodes)
-       (set-indexes-for-nodes second-nodes)
-       (vector-push-extend
-        (make
-         'graph-fragment
-         :broken-edges (remove-obsolete-broken-edges broken-edges
-                                                     first-nodes)
-         :source-graph graph
-         :nodes first-nodes)
-        result)
-       (vector-push-extend
-        (make
-         'graph-fragment
-         :broken-edges (remove-obsolete-broken-edges broken-edges
-                                                     second-nodes)
-         :source-graph graph
-         :nodes second-nodes)
-        result)
-       (return result)))))
+  (let* ((clone (clone graph))
+         (edges nil))
+    (unless (break-cycles-p mixer)
+      (mark-cyclic-edges clone))
+    (setf edges (edges clone))
+    (when (emptyp edges)
+      (return-from cut
+        (make 'graph-fragment
+              :broken-edges #()
+              :source-graph graph
+              :nodes (nodes clone))))
+    (iterate
+      (with result = (vect))
+      (with initial-edge = (pick-random edges))
+      (with first-node = (first-node initial-edge))
+      (with second-node = (second-node initial-edge))
+      (with edge = initial-edge)
+      (with broken-edges = (vect))
+      (for broken-edge = (break-edge! edge))
+      (vector-push-extend broken-edge broken-edges)
+      (for path = (shortest-path clone first-node second-node))
+      (until (null path))
+      (setf edge (~> path edges pick-random))
+      (finally
+       (let ((first-nodes (reachable-nodes first-node))
+             (second-nodes (reachable-nodes second-node)))
+         (assert (= (+ (length first-nodes)
+                       (length second-nodes))
+                    (length (nodes graph))))
+         (iterate
+           (for first in-vector first-nodes)
+           (assert (not (find first second-nodes))))
+         (set-indexes-for-nodes first-nodes)
+         (set-indexes-for-nodes second-nodes)
+         (vector-push-extend
+          (make
+           'graph-fragment
+           :broken-edges (remove-obsolete-broken-edges broken-edges
+                                                       first-nodes)
+           :source-graph graph
+           :nodes first-nodes)
+          result)
+         (vector-push-extend
+          (make
+           'graph-fragment
+           :broken-edges (remove-obsolete-broken-edges broken-edges
+                                                       second-nodes)
+           :source-graph graph
+           :nodes second-nodes)
+          result)
+         (return result))))))
 
 
 (defmethod initialize-instance :after ((object path)
@@ -294,9 +315,7 @@
 
 (defmethod initialize-instance :after ((object graph) &rest initargs)
   (declare (ignore initargs))
-  (iterate
-    (for node in-vector (nodes object))
-    (assert node)))
+  (setf (slot-value object '%cycles) (scan-cycles object)))
 
 
 (defmethod initialize-instance :after ((object graph-fragment)
@@ -307,3 +326,7 @@
     (for broken-edge in-vector (broken-edges object))
     (assert (or (find (first-node broken-edge) nodes)
                 (find (second-node broken-edge) nodes)))))
+
+
+(defmethod partakes-in-cycle-p ((edge edge))
+  (~> edge cycles-count zerop not))

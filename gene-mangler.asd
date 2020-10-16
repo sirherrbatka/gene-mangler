@@ -47,6 +47,7 @@
                              (:file "conductors")
                              (:file "directed")
                              (:file "elite")
+                             (:file "repeats")
                              (:file "documentation")))
                (:module "graph-data"
                 :components ((:file "package")

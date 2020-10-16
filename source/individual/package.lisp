@@ -20,5 +20,6 @@
    #:individual-fitness
    #:individual-has-fitness-p
    #:individual-p
+   #:make-individual
    #:mutate
    #:mutate*/proxy))

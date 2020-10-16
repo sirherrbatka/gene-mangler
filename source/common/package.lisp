@@ -6,7 +6,7 @@
   (:export
    #:lifting-proxy
    #:proxy-enabled
-   #:envelop
+   #:lift
    #:proxy
    #:defgeneric/proxy
    #:next-proxy))

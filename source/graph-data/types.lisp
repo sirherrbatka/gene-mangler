@@ -7,8 +7,11 @@
 
 (defclass graph-cutset-mixer (individual:fundamental-mixer)
   ((%number-of-cuts :initarg :number-of-cuts
-                    :reader number-of-cuts))
-  (:default-initargs :number-of-cuts 1))
+                    :reader number-of-cuts)
+   (%break-cycles-p :initarg :break-cycles-p
+                    :reader break-cycles-p))
+  (:default-initargs :number-of-cuts 1
+                     :break-cycles-p t))
 
 
 (defclass node ()
@@ -21,7 +24,9 @@
 
 (defclass graph ()
   ((%nodes :initarg :nodes
-           :reader nodes)))
+           :reader nodes)
+   (%cycles :initarg :cycles
+            :reader cycles)))
 
 
 (defclass path ()
@@ -34,10 +39,13 @@
 
 
 (defclass edge ()
-  ((%first-node :initarg :first-node
+  ((%cycles-count :initarg :cycles-count
+                  :accessor cycles-count)
+   (%first-node :initarg :first-node
                 :accessor first-node)
    (%second-node :initarg :second-node
-                 :accessor second-node)))
+                 :accessor second-node))
+  (:default-initargs :cycles-count 0))
 
 
 (defclass broken-edge ()

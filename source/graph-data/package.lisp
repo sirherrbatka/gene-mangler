@@ -24,6 +24,9 @@
    #:connect-nodes
    #:nodes-connectable-p
    #:graph
+   #:cycles
+   #:break-cycles-p
+   #:partakes-in-cycle-p
    #:graph-cutset-mixer
    #:graph-fragment
    #:graph-mutator

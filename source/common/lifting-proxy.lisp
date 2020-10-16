@@ -27,7 +27,7 @@
   (:default-initargs :proxy nil))
 
 
-(defun envelop (object proxy-class &rest args)
+(defun lift (object proxy-class &rest args)
   (setf (proxy object) (apply #'make proxy-class
                               :next-proxy (proxy object)
                               args))

@@ -8,12 +8,17 @@
    (#:individual #:gene-mangler.individual))
   (:export
    #:at-population
+   #:at-population/proxy
    #:build-population
+   #:build-population/proxy
    #:crossover
-   #:new-generation/proxy
    #:crossover-pairs
+   #:crossover-pairs/proxy
    #:distinct
    #:ensure-fitness
+   #:ensure-fitness/proxy
+   #:ensure-fitness/vector
+   #:ensure-fitness/vector/proxy
    #:fitness-calculator
    #:fundamental-conductor
    #:fundamental-selection-criteria
@@ -22,19 +27,16 @@
    #:mixer
    #:mutate
    #:mutation-rate
-   #:crossover-pairs/proxy
-   #:ensure-fitness/proxy
-   #:select/proxy
-   #:build-population/proxy
-   #:population-size/proxy
-   #:at-population/proxy
-   #:population-range/proxy
    #:mutator
    #:new-generation
+   #:new-generation/proxy
    #:population-interface
    #:population-range
+   #:population-range/proxy
    #:population-size
+   #:population-size/proxy
    #:select
+   #:select/proxy
    #:selection-criteria
    #:test
    #:transform-population))

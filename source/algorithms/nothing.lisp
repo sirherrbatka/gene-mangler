@@ -27,5 +27,5 @@
 
 (defmacro criteria (&rest forms)
   `(~> (make 'inclusive-criteria)
-       ,@(mapcar (lambda (x) `(common:envelop ',(first x) ,@(rest x)))
+       ,@(mapcar (lambda (x) `(common:lift ',(first x) ,@(rest x)))
                  forms)))

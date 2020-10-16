@@ -19,3 +19,6 @@
 (defgeneric (setf first-node) (new-value edge))
 (defgeneric second-node (edge))
 (defgeneric (setf second-node) (new-value edge))
+(defgeneric break-cycles-p (mixer))
+(defgeneric partakes-in-cycle-p (edge))
+(defgeneric cycles (graph))

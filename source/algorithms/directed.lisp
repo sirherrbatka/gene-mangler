@@ -23,6 +23,18 @@
                         (population population))))
 
 
+(defmethod generation:ensure-fitness/proxy
+    ((population-interface/proxy directed)
+     calculator
+     population-interface
+     population)
+  (generation:ensure-fitness/proxy
+   (common:next-proxy population-interface/proxy)
+   calculator
+   population-interface
+   (population population)))
+
+
 (defmethod generation:build-population/proxy
     ((population-interface/proxy directed)
      population-interface
