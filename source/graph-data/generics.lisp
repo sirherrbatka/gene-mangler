@@ -22,3 +22,4 @@
 (defgeneric break-cycles-p (mixer))
 (defgeneric partakes-in-cycle-p (edge))
 (defgeneric cycles (graph))
+(defgeneric break-cycle (graph cycle))

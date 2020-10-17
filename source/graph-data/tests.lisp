@@ -1,6 +1,6 @@
 (cl:in-package #:gene-mangler.graph-data)
 
-(prove:plan 32)
+(prove:plan 54)
 
 (let* ((linear-graph (build-graph
                      ()
@@ -83,8 +83,15 @@
                         ()
                         ((a) (b) (c) (d))
                         ((a b) (b c) (c d) (d a))))
+       (cycles (cycles circular-graph))
        (mixer (make 'graph-cutset-mixer))
        (fragments (cutset mixer circular-graph)))
+  (prove:is (length cycles) 1)
+  (prove:is (~> cycles first-elt nodes length) 4)
+  (prove:is (~> cycles first-elt nodes remove-duplicates length) 4)
+  (iterate
+    (for edge in-vector (edges circular-graph))
+    (prove:is (cycles-count edge) 1))
   (prove:is (length fragments) 2)
   (prove:ok (every (lambda (fragment)
                      (~> fragment broken-edges length (= 2)))
@@ -101,5 +108,51 @@
   (let* ((combined-graph (combine-fragments mixer (aref fragments 0) (aref fragments 1)))
          (all-nodes (nodes combined-graph)))
     (prove:is (length all-nodes) 4)))
+
+(let* ((circular-graph (build-graph
+                        ()
+                        ((a) (b) (c) (d) (e))
+                        ((a b) (b c) (c d) (d a) (d e))))
+       (cycles (cycles circular-graph))
+       (cycle-counts (~> circular-graph
+                         edges
+                         (cl-ds.alg:on-each #'cycles-count)
+                         cl-ds.alg:group-by
+                         cl-ds.alg:count-elements)))
+  (declare (optimize (debug 3)))
+  (prove:is (length cycles) 1)
+  (prove:is (~> cycles first-elt nodes length) 4)
+  (prove:is (~> cycles first-elt nodes remove-duplicates length) 4)
+  (prove:is (cl-ds:at cycle-counts 0) 1)
+  (prove:is (cl-ds:at cycle-counts 1) 4)
+  (iterate
+    (for edge in-vector (~> cycles first-elt edges))
+    (prove:is (cycles-count edge) 1)))
+
+(let* ((nested-circular-graph (build-graph
+                           ()
+                           ((a) (b) (c) (d) (e) (f))
+                           ((a b)
+                            (b c) (b d) (d e) (c e)
+                            (e f) (f a))))
+       (cycles (cycles nested-circular-graph))
+       (cycles-by-size
+         (~> cycles
+             (cl-ds.alg:group-by :key (compose #'length
+                                               #'edges))
+             cl-ds.alg:to-vector)))
+  (prove:is (length cycles) 3)
+  (let* ((inner (~> cycles-by-size (cl-ds:at 4) first-elt))
+         (edges (edges inner)))
+    (iterate
+      (for edge in-vector edges)
+      (prove:is (cycles-count edge) 2)))
+  (let* ((by-cycle-count (~> cycles-by-size
+                             (cl-ds:at 5)
+                             (cl-ds.alg:multiplex :key #'edges)
+                             (cl-ds.alg:distinct :test 'eq)
+                             (cl-ds.alg:group-by :key #'cycles-count)
+                             cl-ds.alg:to-vector)))
+    (prove:is (~> by-cycle-count (cl-ds:at 2) length) 7)))
 
 (prove:finalize)

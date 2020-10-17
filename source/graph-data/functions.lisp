@@ -91,6 +91,7 @@
    :trail '()
    :node nil))
 
+
 (defun trail-cells-to-path (graph trail-cells)
   (make 'path
         :graph graph
@@ -98,44 +99,65 @@
         :edges (~>> (map 'vector #'leading-edge trail-cells)
                     (remove-if #'null))))
 
+
+(defun detect-cycle (cell seen)
+  (iterate
+    (with trail = (trail cell))
+    (with node = (node cell))
+    (with result = (list cell))
+    (for trail-cell in trail)
+    (for cell-node = (node trail-cell))
+    (when (eq node cell-node)
+      (for key = (~> result
+                     (mapcar (compose #'index #'node) _)
+                     (sort #'<)))
+      (for mapped-p = (shiftf (gethash key seen) t))
+      (when mapped-p
+        (leave (values nil nil)))
+      (iterate
+        (for trail-cell in result)
+        (for cell-edge = (leading-edge trail-cell))
+        (unless (null cell-edge)
+          (incf (cycles-count cell-edge))))
+      (leave (values result t)))
+    (push trail-cell result)
+    (finally
+     (return (values nil t)))))
+
+
 (defun scan-cycles (graph)
-  (declare (optimize (debug 3) (safety 3)))
   (iterate outer
     (with stack = (list (make 'graph-walking-cell
                               :node (~> graph nodes first-elt))))
-    (with seen = (make-hash-table :test 'eq))
+    (with seen = (make-hash-table :test 'equal))
     (until (endp stack))
-    (for trail = stack)
     (for cell = (pop stack))
     (for node = (node cell))
     (for leading-edge = (leading-edge cell))
+    (for trail = (trail cell))
+    (for new-trail = (cons cell trail))
+    (for edges = (edges node))
+    (for (values cycle walk) = (detect-cycle cell seen))
+    (when cycle
+      (collect cycle into cycles at start))
+    (unless walk
+      (next-iteration))
     (iterate
       (for edge in-vector (edges node))
       (when (eq edge leading-edge)
         (next-iteration))
+      (for seen-p = (~> (member edge trail
+                                :test 'eq :key 'leading-edge)
+                        endp
+                        not))
       (for destination = (follow-edge node edge))
-      (for cycle-p =  (~> cell
-                          trail
-                          (member destination _ :test 'eq :key 'node)
-                          endp
-                          not))
-      (when cycle-p
-        (incf (cycles-count edge))
-        (iterate
-          (for trail-cell in (cons cell (trail cell)))
-          (for node = (node trail-cell))
-          (for cell-edge = (leading-edge trail-cell))
-          (unless (null cell-edge)
-            (incf (cycles-count cell-edge)))
-          (collect trail-cell into result)
-          (until (eq node destination))
-          (finally (in outer (collect result into cycles at start)))))
-      (when (not (shiftf (gethash edge seen) t))
-       (push (make 'graph-walking-cell
-                   :node destination
-                   :trail trail
-                   :leading-edge edge)
-             stack)))
+      (when seen-p
+        (next-iteration))
+      (push (make 'graph-walking-cell
+                  :node destination
+                  :trail new-trail
+                  :leading-edge edge)
+            stack))
     (finally (return-from outer
                (map 'vector
                     (curry #'trail-cells-to-path graph)
