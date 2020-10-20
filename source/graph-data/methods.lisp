@@ -72,8 +72,12 @@
           (connect-nodes mixer
                          (find-node a-edge a-nodes)
                          (find-node b-edge b-nodes)))
-         (a-random-broken-edges (~> a-broken-edges copy-array shuffle))
-         (b-random-broken-edges (~> b-broken-edges copy-array shuffle))
+         (a-random-broken-edges (~> a-broken-edges
+                                    copy-array
+                                    shuffle))
+         (b-random-broken-edges (~> b-broken-edges
+                                    copy-array
+                                    shuffle))
          ((:values shorter.nodes longer.nodes)
           (extrema `((,a-random-broken-edges . ,a-nodes)
                      (,b-random-broken-edges . ,b-nodes))
@@ -85,7 +89,9 @@
     ;; The source algorithm is more sophisticated as it does that
     ;; it randomizes that behaviour
     ;; TODO implement the complete algorithm
-    (map nil #'merge-edges a-random-broken-edges b-random-broken-edges)
+    (map nil #'merge-edges
+         a-random-broken-edges
+         b-random-broken-edges)
     (if (and (emptyp a-random-broken-edges)
              (emptyp a-random-broken-edges))
         (iterate outer
@@ -102,14 +108,13 @@
           (for i from (length shorter) below (length longer))
           (for broken-edge = (aref longer i))
           (for longer-node = (find-node broken-edge longer-nodes))
+          (when (zerop (random 3))
+            (next-iteration))
           (iterate
-            (for discarded-p = (random 3))
-            (until (zerop discarded-p))
-            (for random = (~> shorter-nodes length random))
-            (for shorter-node = (aref shorter-nodes random))
+            (for shorter-node in-vector (shuffle shorter-nodes))
             (when (nodes-connectable-p mixer shorter-node longer-node)
               (connect-nodes mixer shorter-node longer-node)
-              (leave)))))
+              (finish)))))
     (make 'graph
           :nodes (~> a-fragment-clone nodes first-elt
                      reachable-nodes set-indexes-for-nodes))))
@@ -177,12 +182,55 @@
                 clone-mapping)))
 
 
+(defmethod graph-without ((graph graph) objects)
+  (check-type objects vector)
+  (bind ((skipped-objects (cl-ds.alg:to-hash-table objects :test 'eq))
+         ((:flet skipped-p (object))
+          (not (null (gethash object skipped-objects))))
+         (nodes (~>> graph nodes (remove-if #'skipped-p)))
+         (first-node (first-elt nodes))
+         (clone-mapping (make-hash-table :test 'eq))
+         ((:flet ensure-clone (object))
+          (let ((clone (gethash object clone-mapping)))
+            (if (null clone)
+                (values (setf (gethash object clone-mapping)
+                              (clone object))
+                        t)
+              (values (gethash object clone-mapping)
+                      nil)))))
+        (iterate
+         (with stack = (~> first-node ensure-clone list))
+         (until (endp stack))
+         (for object = (pop stack))
+         (assert object)
+         (for links = (crawl object))
+         (iterate
+          (for (values lense more) = (cl-ds:consume-front links))
+          (while more)
+          (assert lense)
+          (for reached-object = (look lense))
+          (assert reached-object)
+          (when (skipped-p reached-object)
+            (setf (look lense) nil)
+            (next-iteration))
+          (for (values clone new) = (ensure-clone reached-object))
+          (setf (look lense) clone)
+          (when new (push clone stack))))
+        (values (make 'graph
+                      :nodes (map 'vector
+                                  (rcurry #'gethash clone-mapping)
+                                  nodes))
+                clone-mapping)))
+
+
 (defmethod crawl ((node node))
   (let ((edges (edges node)))
     (~> (cl-ds:iota-range :to (length edges))
         (cl-ds.alg:on-each
          (lambda (index)
-           (lense (aref edges index)))))))
+           (when-let ((content (aref edges index)))
+             (lense (aref edges index)))))
+        (cl-ds.alg:without #'null))))
 
 
 (defmethod crawl ((edge edge))
@@ -207,6 +255,15 @@
          (first-node edge))
         (t (error 'invalid-origin
                   :format-control "Origin not found in the edge."))))
+
+
+(defmethod edges :before ((object node))
+  (let ((edges (slot-value object '%edges)))
+    (decf (fill-pointer edges) (cl-ds.utils:swap-if edges #'null))))
+
+
+(defmethod (setf edges) :before (new-value (object node))
+  (assert (array-has-fill-pointer-p new-value)))
 
 
 (defmethod edges ((object graph))
@@ -243,10 +300,7 @@
 
 (defmethod cut ((mixer graph-cutset-mixer) graph)
   (let* ((clone (clone graph))
-         (edges nil))
-    (unless (break-cycles-p mixer)
-      (mark-cyclic-edges clone))
-    (setf edges (edges clone))
+         (edges (edges clone)))
     (when (emptyp edges)
       (return-from cut
         (make 'graph-fragment
@@ -315,7 +369,13 @@
 
 (defmethod initialize-instance :after ((object graph) &rest initargs)
   (declare (ignore initargs))
+  (assert (every (complement #'null) (nodes object)))
   (setf (slot-value object '%cycles) (scan-cycles object)))
+
+
+(defmethod initialize-instance :after ((object node) &rest initargs)
+  (declare (ignore initargs))
+  (assert (array-has-fill-pointer-p (edges object))))
 
 
 (defmethod initialize-instance :after ((object graph-fragment)

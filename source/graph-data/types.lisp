@@ -7,11 +7,8 @@
 
 (defclass graph-cutset-mixer (individual:fundamental-mixer)
   ((%number-of-cuts :initarg :number-of-cuts
-                    :reader number-of-cuts)
-   (%break-cycles-p :initarg :break-cycles-p
-                    :reader break-cycles-p))
-  (:default-initargs :number-of-cuts 1
-                     :break-cycles-p t))
+                    :reader number-of-cuts))
+  (:default-initargs :number-of-cuts 1))
 
 
 (defclass node ()

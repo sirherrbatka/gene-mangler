@@ -1,6 +1,6 @@
 (cl:in-package #:gene-mangler.graph-data)
 
-(prove:plan 54)
+(prove:plan 61)
 
 (let* ((linear-graph (build-graph
                      ()
@@ -119,7 +119,6 @@
                          (cl-ds.alg:on-each #'cycles-count)
                          cl-ds.alg:group-by
                          cl-ds.alg:count-elements)))
-  (declare (optimize (debug 3)))
   (prove:is (length cycles) 1)
   (prove:is (~> cycles first-elt nodes length) 4)
   (prove:is (~> cycles first-elt nodes remove-duplicates length) 4)
@@ -130,18 +129,23 @@
     (prove:is (cycles-count edge) 1)))
 
 (let* ((nested-circular-graph (build-graph
-                           ()
-                           ((a) (b) (c) (d) (e) (f))
-                           ((a b)
-                            (b c) (b d) (d e) (c e)
-                            (e f) (f a))))
+                                  ()
+                                  ((a) (b) (c) (d) (e) (f))
+                                  ((a b)
+                                   (b c) (b d) (d e) (c e)
+                                   (e f) (f a))))
        (cycles (cycles nested-circular-graph))
        (cycles-by-size
          (~> cycles
              (cl-ds.alg:group-by :key (compose #'length
                                                #'edges))
-             cl-ds.alg:to-vector)))
+             cl-ds.alg:to-vector))
+       (cycles-grouped-by-edges (cycles-grouped-by-edges nested-circular-graph)))
   (prove:is (length cycles) 3)
+  (cl-ds:across cycles-grouped-by-edges
+                (lambda (edge.cycles)
+                  (bind (((edge . cycles) edge.cycles))
+                    (prove:is (cycles-count edge) (length cycles)))))
   (let* ((inner (~> cycles-by-size (cl-ds:at 4) first-elt))
          (edges (edges inner)))
     (iterate

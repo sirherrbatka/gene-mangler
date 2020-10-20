@@ -14,26 +14,25 @@
    #:broken-edges
    #:clone
    #:combine-fragments
+   #:connect-nodes
    #:crawl
    #:cut
    #:cutset
+   #:cycles-grouped-by-edges
+   #:cycles
+   #:cycles-count
    #:edge
    #:edges
    #:first-node
    #:follow-edge
-   #:connect-nodes
-   #:nodes-connectable-p
    #:graph
-   #:cycles
-   #:break-cycles-p
-   #:partakes-in-cycle-p
    #:graph-cutset-mixer
    #:graph-fragment
    #:graph-mutator
+   #:graph-without
+   #:index
    #:invalid-origin
    #:lense
-   #:index
-   #:set-indexes-for-nodes
    #:look
    #:make-edge
    #:no-edge-error
@@ -41,9 +40,12 @@
    #:no-path-error
    #:node
    #:nodes
+   #:nodes-connectable-p
    #:number-of-cuts
    #:original-edge
+   #:partakes-in-cycle-p
    #:path
    #:reachable-nodes
    #:second-node
+   #:set-indexes-for-nodes
    #:shortest-path))

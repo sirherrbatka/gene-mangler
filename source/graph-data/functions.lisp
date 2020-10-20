@@ -15,6 +15,7 @@
       (for next = (follow-edge n edge))
       (unless (gethash next visited)
         (setf (gethash next visited) t)
+        (assert next)
         (push next stack)))
     (finally (return result))))
 
@@ -151,6 +152,7 @@
                         endp
                         not))
       (for destination = (follow-edge node edge))
+      (assert destination)
       (when seen-p
         (next-iteration))
       (push (make 'graph-walking-cell
@@ -162,6 +164,19 @@
                (map 'vector
                     (curry #'trail-cells-to-path graph)
                     cycles)))))
+
+
+(defun cycles-grouped-by-edges (graph)
+  (~> graph cycles
+      (cl-ds.alg:multiplex
+       :key (lambda (x)
+              (map 'vector
+                   (curry #'cons x)
+                   (edges x))))
+      (cl-ds.alg:group-by :test 'eq :key #'cdr)
+      (cl-ds.alg:on-each #'car)
+      (cl-ds.alg:distinct :test 'eq)
+      cl-ds.alg:to-vector))
 
 
 (defun cutset (mixer graph)
@@ -176,10 +191,12 @@
 
 
 (defun break-edge! (edge)
-  (let ((first-node (first-node edge))
-        (second-node (second-node edge)))
-    (setf #1=(edges first-node) (remove edge #1# :test 'eq)
-          #2=(edges second-node) (remove edge #2# :test 'eq))
+  (let* ((first-node (first-node edge))
+         (second-node (second-node edge))
+         (first-edges (edges first-node))
+         (second-edges (edges second-node)))
+    (cl-ds.utils:swapop first-edges (position edge first-edges))
+    (cl-ds.utils:swapop second-edges (position edge second-edges))
     (make 'broken-edge
           :first-node first-node
           :second-node second-node
