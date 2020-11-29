@@ -44,8 +44,10 @@
    #:number-of-cuts
    #:original-edge
    #:partakes-in-cycle-p
+   #:connected-graph-p
    #:path
    #:reachable-nodes
    #:second-node
    #:set-indexes-for-nodes
-   #:shortest-path))
+   #:shortest-path)
+  )

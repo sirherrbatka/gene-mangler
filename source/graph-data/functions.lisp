@@ -13,8 +13,7 @@
     (iterate
       (for edge in-vector (edges n))
       (for next = (follow-edge n edge))
-      (unless (gethash next visited)
-        (setf (gethash next visited) t)
+      (unless (shiftf (gethash next visited) t)
         (assert next)
         (push next stack)))
     (finally (return result))))

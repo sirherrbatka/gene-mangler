@@ -152,34 +152,37 @@
 
 (defmethod clone ((graph graph))
   (bind ((nodes (nodes graph))
-         (first-node (first-elt nodes))
          (clone-mapping (make-hash-table :test 'eq))
+         (clones (make-hash-table :test 'eq))
          ((:flet ensure-clone (object))
-          (let ((clone (gethash object clone-mapping)))
-            (if (null clone)
-                (values (setf (gethash object clone-mapping)
-                              (clone object))
-                        t)
-              (values (gethash object clone-mapping)
-                      nil)))))
+          (if (gethash object clones)
+              (values object nil)
+              (if-let ((clone (gethash object clone-mapping)))
+                (values clone nil)
+                (let ((clone (clone object)))
+                  (setf (gethash object clone-mapping) clone
+                        (gethash clone clones) t)
+                  (values clone t))))))
+    (iterate
+      (for node in-vector nodes)
+      (for (values clone new) = (ensure-clone node))
+      (unless new (next-iteration))
+      (iterate
+        (with stack = (list clone))
+        (until (endp stack))
+        (for links = (crawl (pop stack)))
         (iterate
-         (with stack = (~> first-node ensure-clone list))
-         (until (endp stack))
-         (for object = (pop stack))
-         (for links = (crawl object))
-         (iterate
           (for (values lense more) = (cl-ds:consume-front links))
           (while more)
           (for reached-object = (look lense))
           (for (values clone new) = (ensure-clone reached-object))
           (setf (look lense) clone)
-          (when new
-            (push clone stack))))
-        (values (make 'graph
-                      :nodes (map 'vector
-                                  (rcurry #'gethash clone-mapping)
-                                  nodes))
-                clone-mapping)))
+          (when new (push clone stack)))))
+    (values (make 'graph
+                  :nodes (map 'vector
+                              (rcurry #'gethash clone-mapping)
+                              nodes))
+            clone-mapping)))
 
 
 (defmethod graph-without ((graph graph) objects)
@@ -196,8 +199,8 @@
                 (values (setf (gethash object clone-mapping)
                               (clone object))
                         t)
-              (values (gethash object clone-mapping)
-                      nil)))))
+                (values (gethash object clone-mapping)
+                        nil)))))
         (iterate
          (with stack = (~> first-node ensure-clone list))
          (until (endp stack))
@@ -237,7 +240,8 @@
   (cl-ds:xpr (:i 0)
     (switch (i)
       (0 (cl-ds:send-recur (lense (first-node edge)) :i 1))
-      (1 (cl-ds:send-finish (lense (second-node edge)))))))
+      (1 (cl-ds:send-recur (lense (second-node edge)) :i 2))
+      (2 (cl-ds:finish)))))
 
 
 (defmethod crawl ((edge broken-edge))
@@ -245,7 +249,8 @@
     (switch (i)
       (0 (cl-ds:send-recur (lense (first-node edge)) :i 1))
       (1 (cl-ds:send-recur (lense (second-node edge)) :i 2))
-      (2 (cl-ds:send-finish (lense (original-edge edge)))))))
+      (2 (cl-ds:send-recur (lense (original-edge edge)) :i 3))
+      (3 (cl-ds:finish)))))
 
 
 (defmethod follow-edge ((origin node) (edge edge))
@@ -300,7 +305,11 @@
 
 (defmethod cut ((mixer graph-cutset-mixer) graph)
   (let* ((clone (clone graph))
+         (break-cycles (break-cycles mixer))
          (edges (edges clone)))
+    (unless break-cycles
+      (setf edges
+            (remove-if-not #'zerop edges :key #'cycles-count)))
     (when (emptyp edges)
       (return-from cut
         (make 'graph-fragment
@@ -390,3 +399,10 @@
 
 (defmethod partakes-in-cycle-p ((edge edge))
   (~> edge cycles-count zerop not))
+
+
+(defmethod connected-graph-p ((graph graph))
+  (= (~> graph nodes first-elt
+         reachable-nodes
+         length)
+     (~> graph nodes length)))

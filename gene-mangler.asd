@@ -54,6 +54,7 @@
                              (:file "generics")
                              (:file "types")
                              (:file "macros")
+                             (:file "conditions")
                              (:file "utils")
                              (:file "functions")
                              (:file "methods")

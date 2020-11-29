@@ -24,3 +24,4 @@
 (defgeneric cycles-count (edge))
 (defgeneric (setf cycles-count) (new-value edge))
 (defgeneric graph-without (graph objects))
+(defgeneric connected-graph-p (graph))

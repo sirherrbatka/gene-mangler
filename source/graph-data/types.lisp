@@ -7,8 +7,11 @@
 
 (defclass graph-cutset-mixer (individual:fundamental-mixer)
   ((%number-of-cuts :initarg :number-of-cuts
-                    :reader number-of-cuts))
-  (:default-initargs :number-of-cuts 1))
+                    :reader number-of-cuts)
+   (%break-cycles :initarg :break-cycles
+                  :reader break-cycles))
+  (:default-initargs :number-of-cuts 1
+                     :break-cycles t))
 
 
 (defclass node ()
@@ -64,3 +67,4 @@
 (defstruct lense
   read-callback
   write-callback)
+
