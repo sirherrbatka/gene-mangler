@@ -11,7 +11,7 @@
    (%break-cycles :initarg :break-cycles
                   :reader break-cycles))
   (:default-initargs :number-of-cuts 1
-                     :break-cycles t))
+                     :break-cycles 1.0))
 
 
 (defclass node ()

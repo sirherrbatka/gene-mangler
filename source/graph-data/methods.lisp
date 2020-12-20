@@ -307,7 +307,7 @@
   (let* ((clone (clone graph))
          (break-cycles (break-cycles mixer))
          (edges (edges clone)))
-    (unless break-cycles
+    (unless (< (random 1.0) break-cycles)
       (setf edges
             (remove-if-not #'zerop edges :key #'cycles-count)))
     (when (emptyp edges)

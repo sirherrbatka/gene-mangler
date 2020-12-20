@@ -183,9 +183,10 @@
     (with result = (vect))
     (repeat (number-of-cuts mixer))
     (for fragments = (cut mixer graph))
-    (iterate
-      (for f in-vector fragments)
-      (vector-push-extend f result))
+    (when (vectorp fragments)
+      (iterate
+        (for f in-vector fragments)
+        (vector-push-extend f result)))
     (finally (return result))))
 
 
